@@ -84,6 +84,6 @@ $(function() {
         || excelOne['名字'] == excelTwo['名字'] && excelOne['时间'] == excelTwo['时间'] && (excelOne['编号'] == '' || excelTwo['编号'] == '');
     }
     // 以二进制方式打开文件
-    // fileReader.readAsBinaryString(files[0]);
+    fileReader.readAsBinaryString(files[0]);
   });
 })
