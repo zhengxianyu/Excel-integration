@@ -1,11 +1,10 @@
 $(function() {
   $('#excelFile').change(function(parentEvent) {
     let files = parentEvent.target.files;
-    console.log("===files::")
-    console.log(files)
-    let keyI = '编号';
-    let keyJ = '名字';
-    let keyO = '时间';
+
+    let keyI = '年月';
+    let keyJ = '金额';
+    let keyO = '交易户名';
 
     let fileReader = new FileReader();
 
