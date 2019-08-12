@@ -1,6 +1,12 @@
 $(function() {
   $('#excelFile').change(function(parentEvent) {
     let files = parentEvent.target.files;
+    console.log("===files::")
+    console.log(files)
+    let keyI = '编号';
+    let keyJ = '名字';
+    let keyO = '时间';
+
     let fileReader = new FileReader();
 
     let getExcelList = [];
@@ -98,23 +104,32 @@ $(function() {
       newSheet.Sheets['Sheet1'] = XLSX.utils.json_to_sheet(getExcelList[0]);
       newSheet.Sheets['Sheet2'] = XLSX.utils.json_to_sheet(getExcelList[1]);
       newSheet.Sheets['Sheet3'] = XLSX.utils.json_to_sheet(getExcelList[2]);
-      saveAs(new Blob([s2ab(XLSX.write(newSheet, sheetDownloadType))], { type: "application/octet-stream" }), "合成数据表格" + '.' + (sheetDownloadType.bookType=="biff2"?"xls":sheetDownloadType.bookType));
+      saveAs(
+        new Blob(
+          [
+            stringToArrayBuffer(XLSX.write(newSheet, sheetDownloadType))
+          ], {
+            type: "application/octet-stream"
+          }
+        ),
+        files[0].name
+      );
     }
 
-    function s2ab(s) {
+    function stringToArrayBuffer(data) {
       if (typeof ArrayBuffer !== 'undefined') {
-        let buf = new ArrayBuffer(s.length);
-        let view = new Uint8Array(buf);
-        for (let i = 0; i != s.length; ++i) {
-          view[i] = s.charCodeAt(i) & 0xFF;
+        let arrayBuffer = new ArrayBuffer(data.length);
+        let unitArray = new Uint8Array(arrayBuffer);
+        for (let unitI = 0; unitI != data.length; unitI++) {
+          unitArray[unitI] = data.charCodeAt(unitI) & 0xFF;
         }
-        return buf;
+        return arrayBuffer;
       } else {
-        let buf = new Array(s.length);
-        for (let i = 0; i != s.length; ++i) {
-          buf[i] = s.charCodeAt(i) & 0xFF;
+        let arrayBuffer = new Array(data.length);
+        for (let bufferI = 0; bufferI != data.length; bufferI++) {
+          arrayBuffer[bufferI] = data.charCodeAt(bufferI) & 0xFF;
         }
-        return buf;
+        return arrayBuffer;
       }
     }
 
@@ -138,19 +153,19 @@ $(function() {
     }
 
     function compareCondition(excelOne, excelTwo) {
-      return excelOne['编号'] == excelTwo['编号'] && excelOne['名字'] == excelTwo['名字'] && excelOne['时间'] == excelTwo['时间']
-        || excelOne['编号'] == excelTwo['编号'] && excelOne['名字'] == excelTwo['名字'] && (excelOne['时间'] == '' || excelTwo['时间'] == '')
-        || excelOne['编号'] == excelTwo['编号'] && excelOne['时间'] == excelTwo['时间'] && (excelOne['名字'] == '' || excelTwo['名字'] == '')
-        || excelOne['名字'] == excelTwo['名字'] && excelOne['时间'] == excelTwo['时间'] && (excelOne['编号'] == '' || excelTwo['编号'] == '');
+      return excelOne[keyI] == excelTwo[keyI] && excelOne[keyJ] == excelTwo[keyJ] && excelOne[keyO] == excelTwo[keyO]
+        || excelOne[keyI] == excelTwo[keyI] && excelOne[keyJ] == excelTwo[keyJ] && (excelOne[keyO] == '' || excelTwo[keyO] == '')
+        || excelOne[keyI] == excelTwo[keyI] && excelOne[keyO] == excelTwo[keyO] && (excelOne[keyJ] == '' || excelTwo[keyJ] == '')
+        || excelOne[keyJ] == excelTwo[keyJ] && excelOne[keyO] == excelTwo[keyO] && (excelOne[keyI] == '' || excelTwo[keyI] == '');
     }
 
-    function saveAs(obj, fileName) {//当然可以自定义简单的下载文件实现方式 
-      let tmpa = document.createElement("a");
-      tmpa.download = fileName || "下载";
-      tmpa.href = URL.createObjectURL(obj); //绑定a标签
-      tmpa.click(); //模拟点击实现下载
-      setTimeout(function () { //延时释放
-        URL.revokeObjectURL(obj); //用URL.revokeObjectURL()来释放这个object URL
+    function saveAs(content, fileName) {
+      let clickDiv = document.createElement("a");
+      clickDiv.download = fileName || "下载";
+      clickDiv.href = URL.createObjectURL(content);
+      clickDiv.click();
+      setTimeout(function () {
+        URL.revokeObjectURL(content);
       }, 100);
     }
 
