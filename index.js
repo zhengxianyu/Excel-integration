@@ -1,10 +1,27 @@
 $(function() {
+  document.getElementById("fuzzySearch").click();
+  $('#fuzzySearch').change(function() {
+    if (document.getElementById("fuzzySearch").checked) {
+      document.getElementById("accurateSearch").checked = false;
+    }
+  });
+
+  $('#accurateSearch').change(function() {
+    if (document.getElementById("accurateSearch").checked) {
+      document.getElementById("fuzzySearch").checked = false;
+    }
+  });
+
   $('#excelFile').change(function(parentEvent) {
+    // 模糊搜索
+    let fuzzySearch = document.getElementById("fuzzySearch").checked;
+
     let files = parentEvent.target.files;
 
-    let keyI = '年月';
-    let keyJ = '金额';
-    let keyO = '交易户名';
+    let keyI = '贷方发生额';
+    let keyJ = '借方发生额';
+    let keyO = '检索';
+    let keyQ = '对方单位';
 
     let fileReader = new FileReader();
 
@@ -59,7 +76,8 @@ $(function() {
           let excelTwo = getExcelList[1][sheetJ];
 
           // 如果三个key都相同或者有两个key相同
-          if (compareCondition(excelOne, excelTwo)) {
+          let condition = fuzzySearch ? compareFuzzyCondition(excelOne, excelTwo) : compareAccurateCondition(excelOne, excelTwo);
+          if (condition) {
             getCompareSameOne[getCompareSameOne.length] = excelOne;
             getCompareSameTwo[getCompareSameTwo.length] = excelTwo;
 
@@ -103,16 +121,16 @@ $(function() {
       newSheet.Sheets['Sheet1'] = XLSX.utils.json_to_sheet(getExcelList[0]);
       newSheet.Sheets['Sheet2'] = XLSX.utils.json_to_sheet(getExcelList[1]);
       newSheet.Sheets['Sheet3'] = XLSX.utils.json_to_sheet(getExcelList[2]);
-      saveAs(
-        new Blob(
-          [
-            stringToArrayBuffer(XLSX.write(newSheet, sheetDownloadType))
-          ], {
-            type: "application/octet-stream"
-          }
-        ),
-        files[0].name
-      );
+      // saveAs(
+      //   new Blob(
+      //     [
+      //       stringToArrayBuffer(XLSX.write(newSheet, sheetDownloadType))
+      //     ], {
+      //       type: "application/octet-stream"
+      //     }
+      //   ),
+      //   files[0].name
+      // );
     }
 
     function stringToArrayBuffer(data) {
@@ -139,7 +157,8 @@ $(function() {
         let excelOne = getExcelListNumber[sheetI];
         for (let sheetSame = 0; sheetSame < getCompareSame.length; sheetSame++) {
           let excelSame = getCompareSame[sheetSame];
-          if (compareCondition(excelOne, excelSame)) {
+          let condition = fuzzySearch ? compareFuzzyCondition(excelOne, excelSame) : compareAccurateCondition(excelOne, excelSame);
+          if (condition) {
             notSameCount++;
           }
         }
@@ -151,11 +170,21 @@ $(function() {
       return elementNameList;
     }
 
-    function compareCondition(excelOne, excelTwo) {
+    function compareFuzzyCondition(excelOne, excelTwo) {
       return excelOne[keyI] == excelTwo[keyI] && excelOne[keyJ] == excelTwo[keyJ] && excelOne[keyO] == excelTwo[keyO]
-        || excelOne[keyI] == excelTwo[keyI] && excelOne[keyJ] == excelTwo[keyJ] && (excelOne[keyO] == '' || excelTwo[keyO] == '')
-        || excelOne[keyI] == excelTwo[keyI] && excelOne[keyO] == excelTwo[keyO] && (excelOne[keyJ] == '' || excelTwo[keyJ] == '')
-        || excelOne[keyJ] == excelTwo[keyJ] && excelOne[keyO] == excelTwo[keyO] && (excelOne[keyI] == '' || excelTwo[keyI] == '');
+        || excelOne[keyI] == excelTwo[keyI] && excelOne[keyJ] == excelTwo[keyJ] && (!excelOne[keyO] || !excelTwo[keyO])
+        || excelOne[keyI] == excelTwo[keyI] && excelOne[keyO] == excelTwo[keyO] && (!excelOne[keyJ] || !excelTwo[keyJ])
+        || excelOne[keyJ] == excelTwo[keyJ] && excelOne[keyO] == excelTwo[keyO] && (!excelOne[keyI] || !excelTwo[keyI]);
+    }
+
+    function compareAccurateCondition(excelOne, excelTwo) {
+      return excelOne[keyI] == excelTwo[keyI] && excelOne[keyJ] == excelTwo[keyJ] && excelOne[keyO] == excelTwo[keyO] && excelOne[keyQ] == excelTwo[keyQ]
+        || excelOne[keyI] == excelTwo[keyI] && excelOne[keyJ] == excelTwo[keyJ] && excelOne[keyQ] == excelTwo[keyQ] && (!excelOne[keyO] || !excelTwo[keyO])
+        || excelOne[keyI] == excelTwo[keyI] && excelOne[keyO] == excelTwo[keyO] && excelOne[keyQ] == excelTwo[keyQ] && (!excelOne[keyJ] || !excelTwo[keyJ])
+        || excelOne[keyJ] == excelTwo[keyJ] && excelOne[keyO] == excelTwo[keyO] && excelOne[keyQ] == excelTwo[keyQ] && (!excelOne[keyI] || !excelTwo[keyI])
+        || excelOne[keyI] == excelTwo[keyI] && excelOne[keyJ] == excelTwo[keyJ] && excelOne[keyO] == excelTwo[keyO] && (!excelOne[keyQ] || !excelTwo[keyQ])
+        || (!excelOne[keyI] || !excelTwo[keyI]) && excelOne[keyJ] == excelTwo[keyJ] && excelOne[keyO] == excelTwo[keyO] && (!excelOne[keyQ] || !excelTwo[keyQ])
+        || excelOne[keyI] == excelTwo[keyI] && (!excelOne[keyJ] || !excelTwo[keyJ]) && excelOne[keyO] == excelTwo[keyO] && (!excelOne[keyQ] || !excelTwo[keyQ]);
     }
 
     function saveAs(content, fileName) {
