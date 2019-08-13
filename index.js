@@ -39,23 +39,11 @@ $(function() {
         return;
       }
 
-      // 获取excell所有元素
-      let sheetIndex = 0;
+      // 获取excel所有元素
       for (let sheet in excelBinaryData.Sheets) {
         if (excelBinaryData.Sheets.hasOwnProperty(sheet)) {
           let excelSheet = XLSX.utils.sheet_to_json(excelBinaryData.Sheets[sheet]);
-          getExcelList[sheetIndex] = excelSheet;
-
-          // 获取excel表名
-          let elementIndex = 0;
-          let elementList = [];
-          for (let headIndex in excelBinaryData.Sheets[sheet]) {
-            if (headIndex.indexOf(1) != -1) {
-              elementList[elementIndex] = excelBinaryData.Sheets[sheet][headIndex].w;
-              elementIndex++;
-            }
-          }
-          sheetIndex++;
+          getExcelList[getExcelList.length] = excelSheet;
         }
       }
 
