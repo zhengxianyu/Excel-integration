@@ -121,16 +121,16 @@ $(function() {
       newSheet.Sheets['Sheet1'] = XLSX.utils.json_to_sheet(getExcelList[0]);
       newSheet.Sheets['Sheet2'] = XLSX.utils.json_to_sheet(getExcelList[1]);
       newSheet.Sheets['Sheet3'] = XLSX.utils.json_to_sheet(getExcelList[2]);
-      // saveAs(
-      //   new Blob(
-      //     [
-      //       stringToArrayBuffer(XLSX.write(newSheet, sheetDownloadType))
-      //     ], {
-      //       type: "application/octet-stream"
-      //     }
-      //   ),
-      //   files[0].name
-      // );
+      saveAs(
+        new Blob(
+          [
+            stringToArrayBuffer(XLSX.write(newSheet, sheetDownloadType))
+          ], {
+            type: "application/octet-stream"
+          }
+        ),
+        files[0].name
+      );
     }
 
     function stringToArrayBuffer(data) {
